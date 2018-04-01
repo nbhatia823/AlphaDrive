@@ -430,7 +430,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = nikhilbhatia.Awaken;
+				PRODUCT_BUNDLE_IDENTIFIER = nikhilbhatia.alphaDrive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "MuseStatIos_Swift/MuseStatIos_Swift-Bridging-Header.h";
@@ -459,7 +459,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = nikhilbhatia.Awaken;
+				PRODUCT_BUNDLE_IDENTIFIER = nikhilbhatia.alphaDrive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "MuseStatIos_Swift/MuseStatIos_Swift-Bridging-Header.h";

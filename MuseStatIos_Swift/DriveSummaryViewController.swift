@@ -14,7 +14,7 @@ class DriveSummaryViewController: UIViewController {
     
     @IBOutlet weak var lineChart: LineChartView!
     @IBAction func exitSummaryClick(_ sender: Any) {
-        
+        navigationController?.popToRootViewController(animated: true)
     }
     
     var finalData: [(date: Date, alpha: Double)]!
@@ -24,8 +24,8 @@ class DriveSummaryViewController: UIViewController {
         lineChart.chartDescription?.enabled = false
         let lYAxis = lineChart.leftAxis
         lYAxis.removeAllLimitLines()
-        lYAxis.axisMaximum = 1.0
-        lYAxis.axisMinimum = -1.0
+        lYAxis.axisMaximum = 1.2
+        lYAxis.axisMinimum = -0.2
         lYAxis.gridLineDashLengths = [5, 5]
         lYAxis.drawLimitLinesBehindDataEnabled = true
         
@@ -50,7 +50,7 @@ class DriveSummaryViewController: UIViewController {
         }
         lXAxis.axisMaximum = Double(chartData.count) * 5.0
 
-        let dataSet = LineChartDataSet(values: chartData, label: "Your Alpha Waves")
+        let dataSet = LineChartDataSet(values: chartData, label: "Your Alpha Waves: Time (seconds) vs. Alpha Values")
         
         dataSet.drawIconsEnabled = false
         dataSet.setColor(.red)
@@ -78,6 +78,8 @@ class DriveSummaryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.setHidesBackButton(true, animated: false)
+        self.navigationItem.title = "Your Drive Summary"
         setupLineChart()
         // Do any additional setup after loading the view.
     }

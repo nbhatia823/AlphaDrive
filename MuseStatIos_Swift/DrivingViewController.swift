@@ -49,7 +49,7 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
     var recentTime: Double = 0.0
     
     @IBOutlet weak var lineChart: LineChartView!
-    var chartData: [ChartDataEntry] = [ChartDataEntry(x: 0.0, y: 0.0)]
+    var chartData: [ChartDataEntry] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +57,7 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
         self.navigationItem.title = "Your Current Drive"
         // Do any additional setup after loading the view.
         setupLineChart()
+        updateChart()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -75,8 +76,8 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
         lineChart.chartDescription?.enabled = false
         let lYAxis = lineChart.leftAxis
         lYAxis.removeAllLimitLines()
-        lYAxis.axisMaximum = 1.0
-        lYAxis.axisMinimum = -1.0
+        lYAxis.axisMaximum = 1.2
+        lYAxis.axisMinimum = -0.2
         lYAxis.gridLineDashLengths = [5, 5]
         lYAxis.drawLimitLinesBehindDataEnabled = true
         
@@ -99,13 +100,14 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
     }
     
     @objc func updateChart() {
+        print(ChartDataEntry(x: recentTime, y: recentAvgAlpha))
         chartData.append(ChartDataEntry(x: recentTime, y: recentAvgAlpha))
         
-        let dataSet = LineChartDataSet(values: chartData, label: "Your Current Alpha Waves")
+        let dataSet = LineChartDataSet(values: chartData, label: "Your Current Alpha Waves: Time (seconds) vs. Alpha Values")
         
         //Shift over graph to only show newest data points
         if chartData.count >= 25 * 2 {
-            chartData = Array(chartData[0 ..< 30])
+            chartData = Array(chartData[20 ..< chartData.count])
             lineChart.xAxis.axisMinimum += 10
             lineChart.xAxis.axisMaximum += 10
         }
@@ -156,7 +158,7 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
                             self.finalStartTime = dict["time"] as! String
                         }
                         let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
+                        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
                         let time = dict["time"] as! String
                         let date = dateFormatter.date(from: time) ?? Date()
                         let alpha = dict["avg_alpha"] as! Double
@@ -208,7 +210,7 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
                     numZeroAlphas += 1.0
                 }
                 //If all are 0, we will divide by 0, so set to 1
-                if numZeroAlphas == 0 {
+                if numZeroAlphas == 4 {
                     numZeroAlphas -= 1.0
                 }
                 recentAvgAlpha = (Double(recievedData1!)! + Double(recievedData2!)! + Double(recievedData3!)! + Double(recievedData4!)!) / (4.0-numZeroAlphas)
@@ -217,6 +219,7 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
                     startTimeSinceReference = date.timeIntervalSinceReferenceDate
                 }
                 recentTime = date.timeIntervalSinceReferenceDate - startTimeSinceReference!
+                print(recentTime, recentAvgAlpha)
             }
         }
     }

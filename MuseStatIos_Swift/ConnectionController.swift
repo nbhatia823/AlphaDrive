@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ConnectionController: UIViewController, IXNMuseConnectionListener, IXNMuseDataListener, IXNMuseListener, IXNLogListener, UITableViewDelegate, UITableViewDataSource {
+class ConnectionController: UIViewController, IXNMuseConnectionListener, IXNMuseDataListener, IXNMuseListener, IXNLogListener /*UITableViewDelegate, UITableViewDataSource*/ {
     /**
      * Handler method for Muse data packets
      *
@@ -39,133 +39,86 @@ class ConnectionController: UIViewController, IXNMuseConnectionListener, IXNMuse
      */
     
     @IBOutlet weak var startDrivingButton: UIButton!
+    @IBOutlet weak var connectButton: UIButton!
+    //@IBOutlet weak var disconnectButton: UIButton!
+    @IBOutlet weak var statusLabel: UILabel!
+    
+    
+    //var updateStatusTimer: Timer?
+    
     var muse = IXNMuse()
     var manager = IXNMuseManagerIos()
-    var logLines = [Any]()
     var isLastBlink = false
     var connected: Bool = false {
         didSet {
             if connected == false {
                 startDrivingButton.isEnabled = false
-
+                //disconnectButton.isEnabled = false
+                connectButton.setTitle("Connect", for: UIControlState.normal)
+                if connectButton.allTargets.count > 0 {
+                    connectButton.removeTarget(self, action: #selector(disconnect(_:)), for: .touchUpInside)
+                }
+                connectButton.addTarget(self, action: #selector(connect(_:)), for: .touchUpInside)
             }
             else {
                 startDrivingButton.isEnabled = true
+                connectButton.setTitle("Disconnect", for: UIControlState.normal)
+                if connectButton.allTargets.count > 0 {
+                    connectButton.removeTarget(self, action: #selector(connect(_:)), for: .touchUpInside)
+                }
+                connectButton.addTarget(self, action: #selector(disconnect(_:)), for: .touchUpInside)
+                //disconnectButton.isEnabled = true
             }
         }
     }
 
     // Declaring an object that will call the functions in SimpleController()
     var connectionController = SimpleController()
-    
-    @IBOutlet var tableView: UITableView!
-    @IBOutlet var logView: UITextView!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
-        self.tableView.delegate = self
-        self.tableView.dataSource = self
+//        self.tableView.delegate = self
+//        self.tableView.dataSource = self
         UIApplication.shared.isIdleTimerDisabled = true
         self.manager = IXNMuseManagerIos.sharedManager()
         self.navigationItem.title = "Prepare for Your Drive"
-        self.connected = false
     }
     
-        override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: Bundle!) {
-            //if (self == super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)) {
-    
-            super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-    
-            self.manager = IXNMuseManagerIos.sharedManager()
-            self.manager.museListener = self
-            self.tableView = UITableView()
-            self.logView = UITextView()
-            self.logLines = [Any]()
-            self.logView.text = ""
-            IXNLogManager.instance()?.setLogListener(self)
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd hh:mm:ss"
-            //var dateStr = dateFormatter.string(fromDate: Date()).appending(".log")
-            let dateStr = dateFormatter.string(from: Date()).appending(".log")
-            print("\(dateStr)")
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.manager.startListening()
+        if self.manager.getMuses().count == 0 {
+            connected = false
+            statusLabel.text = "Disconnected"
         }
-    
-        required init?(coder aDecoder: NSCoder) {
-            super.init(coder: aDecoder)
+        else if !connected {
+            startDrivingButton.isEnabled = false
         }
+    }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        //updateStatusTimer?.invalidate()
+    }
     
+    override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: Bundle!) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        
+        self.manager = IXNMuseManagerIos.sharedManager()
+        self.manager.museListener = self
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
     
     func receiveLog(_ log: IXNLogPacket) {
-        //connectionController.receiveLog(log)
-        //print("\(log.tag): \(log.timestamp) raw: \(log.raw) \(log.message)")
-    }
-    
-    
-    // TODO: Investigate the line below. Something wrong with tableView or it's update. It requires the manual table refresh.
-    func museListChanged() {
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
-        }
-    }
-    
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let rows = connectionController.tableView(tableView, numberOfRowsInSection: section)
-        return rows
-    }
-    
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = connectionController.tableView(tableView, cellForRowAt: indexPath)
-        
-        
-        // The code below works fine. It is simplier to use only one line above, but in case someone would like to completely port it to swift, I kept it.
-        
-//        let simpleTableIdentifier: String = "nil"
-//        let muses = self.manager.getMuses()
-//        
-//        // Checking for the value. If cell doesn't receive any data (finding nil, while unwraping), we give empty.
-//        if let cell = tableView.dequeueReusableCell(withIdentifier: simpleTableIdentifier) {
-//            
-//            if indexPath.row < muses.count {
-//                let muse: IXNMuse = self.manager.getMuses()[indexPath.row] as! IXNMuse
-//                cell.textLabel!.text = muse.getName()
-//                if !muse.isLowEnergy() {
-//                    cell.textLabel!.text = cell.textLabel!.text?.appending(muse.getMacAddress())
-//                }
-//            }
-//            return cell
-//            
-//        } else {
-//            let cell = UITableViewCell(style: .default, reuseIdentifier: simpleTableIdentifier)
-//
-//            if indexPath.row < muses.count {
-//                let muse: IXNMuse = self.manager.getMuses()[indexPath.row] as! IXNMuse
-//                
-//                // TODO: Check the code below in the future
-//                cell.textLabel?.text = muse.getName()
-//                if !muse.isLowEnergy() {
-//                    cell.textLabel?.text = cell.textLabel?.text?.appending(muse.getMacAddress())
-//                }
-//            }
-//            return cell
-//        }
-        
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-        var muses = self.manager.getMuses()
-        if indexPath.row < muses.count {
-            let muse: IXNMuse = muses[indexPath.row] as! IXNMuse
-            self.muse = muse
-            self.connect()
-            print("======Chose device to connect: \(self.muse.getName()) \(self.muse.getMacAddress())======\n")
-        }
+    }
+
+    func museListChanged() {
+
     }
     
     func receive(_ packet: IXNMuseConnectionPacket, muse: IXNMuse?) {       // TODO: Find and error over here!
@@ -174,24 +127,21 @@ class ConnectionController: UIViewController, IXNMuseConnectionListener, IXNMuse
         case IXNConnectionState.disconnected:
             connected = false
             state = "disconnected"
+            statusLabel.text = "Disconnected"
         case IXNConnectionState.connected:
             connected = true
+            print ("reached")
             state = "connected"
+            statusLabel.text = "Connected"
         case IXNConnectionState.connecting:
             state = "connecting"
+            statusLabel.text = "Connecting"
         case IXNConnectionState.needsUpdate:
             state = "needs update"
         case IXNConnectionState.unknown:
             state = "unknown"
         }
         print("connect: \(state)")
-    }
-    
-    
-    func connect() {
-        self.muse.register(self)
-        self.muse.register(self, type: IXNMuseDataPacketType.alphaAbsolute)
-        self.muse.runAsynchronously()
     }
     
     func receive(_ packet: IXNMuseDataPacket?, muse: IXNMuse?) {
@@ -207,25 +157,39 @@ class ConnectionController: UIViewController, IXNMuseConnectionListener, IXNMuse
     }
     
     
-    @IBAction func disconnect(_ sender: Any) {
+    @objc func disconnect(_ sender: Any) {
         connected = false
         if self.muse.getConnectionState() == IXNConnectionState.connected {
             self.muse.disconnect(true)
         }
     }
     
-    @IBAction func scan(_ sender: AnyObject) {
-        self.manager.startListening()
-        DispatchQueue.main.async{
-            self.tableView.reloadData()
+    @objc func connect(_ sender: AnyObject) {
+        var muses = self.manager.getMuses()
+        print(muses.count, " is count of muses")
+        if 0 < muses.count {
+            let muse: IXNMuse = muses[0] as! IXNMuse
+            self.muse = muse
+            self.muse.register(self)
+            self.muse.runAsynchronously()
+            if self.muse.getConnectionState() == IXNConnectionState.connecting {
+                statusLabel.text = "Connecting"
+            }
+            print("======Chose device to connect: \(self.muse.getName()) \(self.muse.getMacAddress())======\n")
+            print(self.muse.getConnectionState() == IXNConnectionState.connecting)
+            print(self.muse.getConnectionState() == IXNConnectionState.connected)
+            print(self.muse.getConnectionState() == IXNConnectionState.disconnected)
+            print(self.muse.getConnectionState() == IXNConnectionState.unknown)
         }
-    }
-    
-    @IBAction func stopScan(_ sender: AnyObject) {
-        self.manager.stopListening()
-        DispatchQueue.main.async{
-            self.tableView.reloadData()
+        else {
+            statusLabel.text = "No muse available"
         }
+        print(muses)
+        print(self.muse)
+        
+//        DispatchQueue.main.async{
+//            self.tableView.reloadData()
+//        }
     }
     
     override func didReceiveMemoryWarning() {
