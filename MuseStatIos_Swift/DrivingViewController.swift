@@ -9,6 +9,8 @@
 import UIKit
 import AVFoundation
 import MediaPlayer
+import Charts
+
 
 class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMuseDataListener, IXNMuseListener, IXNLogListener {
     
@@ -16,11 +18,13 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
     var muse: IXNMuse!
     var manager: IXNMuseManagerIos!
     var connectionController: SimpleController!
-    var timer: Timer?
+    var postDataTimer: Timer?
+    var updateChartTimer: Timer?
     var stopAlarmTimer: Timer?
     var alarmStartTime = 0.0
     var alarmEndTime = 10.0
-    var finalData: [(date: String, alpha: Double)] = []
+    var startTimeSinceReference: Double?
+    var finalData: [(date: Date, alpha: Double)] = []
     var finalStartTime: String = ""
     var audioPlayer:AVAudioPlayer!
     var connected: Bool = false {
@@ -37,18 +41,106 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
     }
     
     
-    @IBOutlet weak var recievedData1: UILabel!
-    @IBOutlet weak var recievedData2: UILabel!
-    @IBOutlet weak var recievedData3: UILabel!
-    @IBOutlet weak var recievedData4: UILabel!
+    var recievedData1: String?
+    var recievedData2: String?
+    var recievedData3: String?
+    var recievedData4: String?
+    var recentAvgAlpha: Double = 0.0
+    var recentTime: Double = 0.0
     
-    @IBOutlet weak var requestLabel: UILabel!
+    @IBOutlet weak var lineChart: LineChartView!
+    var chartData: [ChartDataEntry] = [ChartDataEntry(x: 0.0, y: 0.0)]
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.setHidesBackButton(true, animated: false)
+        self.navigationItem.title = "Your Current Drive"
+        // Do any additional setup after loading the view.
+        setupLineChart()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        print(muse)
+        print(manager)
+        print(muse.getConnectionState() == IXNConnectionState.connected )
+        connect()
+        setupPostDataTimer()
+        setupUpdateChartTimer()
+        
+    }
+    
+    func setupLineChart() {
+        lineChart.legend.form = .line
+        lineChart.chartDescription?.enabled = false
+        let lYAxis = lineChart.leftAxis
+        lYAxis.removeAllLimitLines()
+        lYAxis.axisMaximum = 1.0
+        lYAxis.axisMinimum = -1.0
+        lYAxis.gridLineDashLengths = [5, 5]
+        lYAxis.drawLimitLinesBehindDataEnabled = true
+        
+        lineChart.rightAxis.enabled = false
+        
+        let lXAxis = lineChart.xAxis
+        
+        
+        lXAxis.axisMinimum = 0
+        lXAxis.axisMaximum = 30
+        lXAxis.gridLineDashLengths = [5, 5]
+        lXAxis.drawLimitLinesBehindDataEnabled = true
+        lXAxis.gridLineDashPhase = 0
+    }
+    
+    func setupUpdateChartTimer() {
+        guard updateChartTimer == nil else { return }
+        updateChartTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateChart), userInfo: nil, repeats: true)
+        
+    }
+    
+    @objc func updateChart() {
+        chartData.append(ChartDataEntry(x: recentTime, y: recentAvgAlpha))
+        
+        let dataSet = LineChartDataSet(values: chartData, label: "Your Current Alpha Waves")
+        
+        //Shift over graph to only show newest data points
+        if chartData.count >= 25 * 2 {
+            chartData = Array(chartData[0 ..< 30])
+            lineChart.xAxis.axisMinimum += 10
+            lineChart.xAxis.axisMaximum += 10
+        }
+        
+        dataSet.drawIconsEnabled = false
+        dataSet.setColor(.red)
+        dataSet.lineWidth = 1.5
+        dataSet.circleRadius = 0
+        dataSet.drawCircleHoleEnabled = false
+        dataSet.formLineDashLengths = [5, 2.5]
+        dataSet.formLineWidth = 1
+        dataSet.formSize = 15
+        
+        let gradientColors = [ChartColorTemplates.colorFromString("#00ff0000").cgColor,
+                              ChartColorTemplates.colorFromString("#ffff0000").cgColor]
+        let gradient = CGGradient(colorsSpace: nil, colors: gradientColors as CFArray, locations: nil)!
+        
+        dataSet.fillAlpha = 1
+        dataSet.fill = Fill(linearGradient: gradient, angle: 90) //.linearGradient(gradient, angle: 90)
+        dataSet.drawFilledEnabled = true
+        
+        let data = LineChartData(dataSet: dataSet)
+        
+        data.setDrawValues(false)
+        
+        lineChart.data = data
+    }
     
     @IBAction func endDrive(_ sender: Any) {
         
         print ("TRYING END REQUEST")
         self.muse.unregisterAllListeners()
-        timer?.invalidate()
+        postDataTimer?.invalidate()
+        stopAlarmTimer?.invalidate()
+        updateChartTimer?.invalidate()
         
         let url = URL(string: "http://167.99.161.100:8000/api/end_trip/haozhuo/")!
         let session = URLSession.shared
@@ -63,15 +155,18 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
                         if self.finalStartTime == "" {
                             self.finalStartTime = dict["time"] as! String
                         }
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
                         let time = dict["time"] as! String
+                        let date = dateFormatter.date(from: time) ?? Date()
                         let alpha = dict["avg_alpha"] as! Double
-                        self.finalData.append((time, alpha))
+                        self.finalData.append((date, alpha))
                     }
                 }
                 print (self.finalData)
-//                DispatchQueue.main.async {
-//                    self.requestLabel.text = (json["data"] as AnyObject? as? String) ?? ""
-//                }
+                DispatchQueue.main.async {
+                    self.performSegue(withIdentifier: "endDrive", sender: self)
+                }
             } catch let error as NSError {
                 print(error)
             }
@@ -93,10 +188,35 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
         if packet?.packetType() == IXNMuseDataPacketType.alphaAbsolute {
             print("Alpha data has been recieved to DrivingVC")
             if let info = packet?.values() {
-                recievedData1.text = "\(info[0])"
-                recievedData2.text = "\(info[1])"
-                recievedData3.text = "\(info[2])"
-                recievedData4.text = "\(info[3])"
+                recievedData1 = "\(info[0])"
+                recievedData2 = "\(info[1])"
+                recievedData3 = "\(info[2])"
+                recievedData4 = "\(info[3])"
+                
+                var numZeroAlphas = 0.0
+                //We only want to count nonZero alphas
+                if recievedData1 == "0" {
+                    numZeroAlphas += 1.0
+                }
+                if recievedData2 == "0" {
+                    numZeroAlphas += 1.0
+                }
+                if recievedData3 == "0" {
+                    numZeroAlphas += 1.0
+                }
+                if recievedData4 == "0" {
+                    numZeroAlphas += 1.0
+                }
+                //If all are 0, we will divide by 0, so set to 1
+                if numZeroAlphas == 0 {
+                    numZeroAlphas -= 1.0
+                }
+                recentAvgAlpha = (Double(recievedData1!)! + Double(recievedData2!)! + Double(recievedData3!)! + Double(recievedData4!)!) / (4.0-numZeroAlphas)
+                let date = Date()
+                if startTimeSinceReference == nil {
+                    startTimeSinceReference = date.timeIntervalSinceReferenceDate
+                }
+                recentTime = date.timeIntervalSinceReferenceDate - startTimeSinceReference!
             }
         }
     }
@@ -130,17 +250,10 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
         self.muse.register(self, type: IXNMuseDataPacketType.alphaAbsolute)
         self.muse.runAsynchronously()
     }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.navigationItem.setHidesBackButton(true, animated: false)
-        self.navigationItem.title = "Your Current Drive"
-        // Do any additional setup after loading the view.
-    }
 
-    func startTimer() {
-        guard timer == nil else { return }
-        timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(sendData), userInfo: nil, repeats: true)
+    func setupPostDataTimer() {
+        guard postDataTimer == nil else { return }
+        postDataTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(sendData), userInfo: nil, repeats: true)
     }
     
     @objc func checkAlarmTimer() {
@@ -176,7 +289,7 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
     @objc func sendData() {
         
         let userName = "haozhuo"
-        if let data1 = self.recievedData1.text, let data2 = self.recievedData2.text, let data3 = self.recievedData3.text, let data4 = self.recievedData4.text{
+        if let data1 = self.recievedData1, let data2 = self.recievedData2, let data3 = self.recievedData3, let data4 = self.recievedData4{
             let index1 = data1 != "0" ? data1.index(data1.startIndex, offsetBy: 4) : data1.index(data1.startIndex, offsetBy: 1)
             let alpha1 = data1.substring(to: index1)
             
@@ -199,7 +312,7 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
                 guard let data = data, error == nil else { return }
                 do {
                     let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String:Any]
-                    DispatchQueue.main.async { // Correct
+                    DispatchQueue.main.async {
                         let dateFormatter : DateFormatter = DateFormatter()
                         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
                         let date = Date()
@@ -208,7 +321,6 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
                         if data == "-1" {
                             self.soundTheAlarm()
                         }
-                        self.requestLabel.text = dateString + " Response:" + data
                     }
                 } catch let error as NSError {
                     print(error)
@@ -216,17 +328,6 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
             }).resume()
             
         }
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        print(muse)
-        print(manager)
-        print(muse.getConnectionState() == IXNConnectionState.connected )
-        connect()
-        startTimer()
-        
-        
     }
     
     override func didReceiveMemoryWarning() {
@@ -238,7 +339,15 @@ class DrivingViewController: UIViewController, IXNMuseConnectionListener, IXNMus
     /*
     // MARK: - Navigation
      */
-     
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if (segue.identifier == "endDrive") {
+            let viewController = segue.destination as! DriveSummaryViewController
+            viewController.finalData = self.finalData
+        }
+        
+    }
+    
      /*
      // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

@@ -7,16 +7,83 @@
 //
 
 import UIKit
-
+import Charts
 
 class DriveSummaryViewController: UIViewController {
 
+    
+    @IBOutlet weak var lineChart: LineChartView!
+    @IBAction func exitSummaryClick(_ sender: Any) {
+        
+    }
+    
+    var finalData: [(date: Date, alpha: Double)]!
+    
+    func setupLineChart() {
+        lineChart.legend.form = .line
+        lineChart.chartDescription?.enabled = false
+        let lYAxis = lineChart.leftAxis
+        lYAxis.removeAllLimitLines()
+        lYAxis.axisMaximum = 1.0
+        lYAxis.axisMinimum = -1.0
+        lYAxis.gridLineDashLengths = [5, 5]
+        lYAxis.drawLimitLinesBehindDataEnabled = true
+        
+        lineChart.rightAxis.enabled = false
+        
+        let lXAxis = lineChart.xAxis
+        
+        
+        lXAxis.axisMinimum = 0
+        lXAxis.gridLineDashLengths = [5, 5]
+        lXAxis.drawLimitLinesBehindDataEnabled = true
+        lXAxis.gridLineDashPhase = 0
+        
+        var startTime: TimeInterval?
+        var chartData = [ChartDataEntry]()
+        for (date,alpha) in finalData {
+            if startTime == nil {
+                startTime = date.timeIntervalSinceReferenceDate
+            }
+            let time = date.timeIntervalSinceReferenceDate - startTime!
+            chartData.append(ChartDataEntry(x: time, y: alpha))
+        }
+        lXAxis.axisMaximum = Double(chartData.count) * 5.0
+
+        let dataSet = LineChartDataSet(values: chartData, label: "Your Alpha Waves")
+        
+        dataSet.drawIconsEnabled = false
+        dataSet.setColor(.red)
+        dataSet.lineWidth = 1.5
+        dataSet.circleRadius = 0
+        dataSet.drawCircleHoleEnabled = false
+        dataSet.formLineDashLengths = [5, 2.5]
+        dataSet.formLineWidth = 1
+        dataSet.formSize = 15
+        
+        let gradientColors = [ChartColorTemplates.colorFromString("#00ff0000").cgColor,
+                              ChartColorTemplates.colorFromString("#ffff0000").cgColor]
+        let gradient = CGGradient(colorsSpace: nil, colors: gradientColors as CFArray, locations: nil)!
+        
+        dataSet.fillAlpha = 1
+        dataSet.fill = Fill(linearGradient: gradient, angle: 90) //.linearGradient(gradient, angle: 90)
+        dataSet.drawFilledEnabled = true
+        
+        let data = LineChartData(dataSet: dataSet)
+        
+        data.setDrawValues(false)
+        
+        lineChart.data = data
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        setupLineChart()
         // Do any additional setup after loading the view.
     }
 
+    
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.

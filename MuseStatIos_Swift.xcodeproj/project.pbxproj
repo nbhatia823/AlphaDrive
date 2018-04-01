@@ -19,6 +19,7 @@
 		22C23A111DD074C600B83272 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 22C23A0F1DD074C600B83272 /* LaunchScreen.storyboard */; };
 		22CDAD201DE6889400A531B0 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22CDAD1F1DE6889400A531B0 /* libc++.tbd */; };
 		22CDAD221DE688B300A531B0 /* ConnectionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22CDAD211DE688B300A531B0 /* ConnectionController.swift */; };
+		346847C914E8CC7654AB4371 /* Pods_MuseStatIos_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5294B450B86FFF5D643A750D /* Pods_MuseStatIos_Swift.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,6 +52,9 @@
 		22C23A121DD074C600B83272 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		22CDAD1F1DE6889400A531B0 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		22CDAD211DE688B300A531B0 /* ConnectionController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionController.swift; sourceTree = "<group>"; };
+		5294B450B86FFF5D643A750D /* Pods_MuseStatIos_Swift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MuseStatIos_Swift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		85C962E3741966F809A3A0AA /* Pods-MuseStatIos_Swift.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MuseStatIos_Swift.release.xcconfig"; path = "Pods/Target Support Files/Pods-MuseStatIos_Swift/Pods-MuseStatIos_Swift.release.xcconfig"; sourceTree = "<group>"; };
+		C8133EDD3CA140326D9E5C87 /* Pods-MuseStatIos_Swift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MuseStatIos_Swift.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MuseStatIos_Swift/Pods-MuseStatIos_Swift.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +64,7 @@
 			files = (
 				0BAFDAAD2070695C00C71D38 /* Muse.framework in Frameworks */,
 				22CDAD201DE6889400A531B0 /* libc++.tbd in Frameworks */,
+				346847C914E8CC7654AB4371 /* Pods_MuseStatIos_Swift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +87,7 @@
 				22C23A051DD074C600B83272 /* MuseStatIos_Swift */,
 				22C23A041DD074C600B83272 /* Products */,
 				22CDAD1E1DE6889400A531B0 /* Frameworks */,
+				470B7D4B0DE515867863A7A7 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -116,8 +122,18 @@
 			isa = PBXGroup;
 			children = (
 				22CDAD1F1DE6889400A531B0 /* libc++.tbd */,
+				5294B450B86FFF5D643A750D /* Pods_MuseStatIos_Swift.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		470B7D4B0DE515867863A7A7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C8133EDD3CA140326D9E5C87 /* Pods-MuseStatIos_Swift.debug.xcconfig */,
+				85C962E3741966F809A3A0AA /* Pods-MuseStatIos_Swift.release.xcconfig */,
+			);
+			name = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -127,10 +143,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 22C23A151DD074C600B83272 /* Build configuration list for PBXNativeTarget "MuseStatIos_Swift" */;
 			buildPhases = (
+				A74A04CB5E1E1C2724E91C75 /* [CP] Check Pods Manifest.lock */,
 				22C239FF1DD074C600B83272 /* Sources */,
 				22C23A001DD074C600B83272 /* Frameworks */,
 				22C23A011DD074C600B83272 /* Resources */,
 				0BAFDABE20707E4300C71D38 /* Embed Frameworks */,
+				25C40FDCCEC32106A6369FC2 /* [CP] Embed Pods Frameworks */,
+				5C639513962419BDE83A59EE /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -148,13 +167,13 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0810;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Ivan Rzhanoi";
 				TargetAttributes = {
 					22C23A021DD074C600B83272 = {
 						CreatedOnToolsVersion = 8.1;
 						DevelopmentTeam = 63T4Z9RD8A;
-						LastSwiftMigration = 0810;
+						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -191,6 +210,60 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		25C40FDCCEC32106A6369FC2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-MuseStatIos_Swift/Pods-MuseStatIos_Swift-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Charts/Charts.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Charts.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MuseStatIos_Swift/Pods-MuseStatIos_Swift-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5C639513962419BDE83A59EE /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MuseStatIos_Swift/Pods-MuseStatIos_Swift-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A74A04CB5E1E1C2724E91C75 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MuseStatIos_Swift-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		22C239FF1DD074C600B83272 /* Sources */ = {
@@ -240,6 +313,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -247,6 +321,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -297,6 +372,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -304,6 +380,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -336,6 +413,7 @@
 		};
 		22C23A161DD074C600B83272 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C8133EDD3CA140326D9E5C87 /* Pods-MuseStatIos_Swift.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -357,12 +435,14 @@
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "MuseStatIos_Swift/MuseStatIos_Swift-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
 		22C23A171DD074C600B83272 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 85C962E3741966F809A3A0AA /* Pods-MuseStatIos_Swift.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -383,7 +463,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "MuseStatIos_Swift/MuseStatIos_Swift-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
