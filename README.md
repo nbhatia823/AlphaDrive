@@ -1,5 +1,4 @@
-# MuseStatIos_Swift
-A project to convert official example from Interaxon (for connecting Muse headband) into Swift.
 
-It is a very raw version, which will be updated in the future. I hope to make it fully functional by the end of this year.
 # Awaken
+
+An iOS app that connects to the Muse headset to track Alpha waves and send them directly to your phone for live charting. Then, if the app detects your alpha waves are signaling you are getting drowsy, it will set off an alarm to wake you up.
